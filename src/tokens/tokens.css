@@ -1,0 +1,108 @@
+/**
+ * @warehouse/ui-kit design tokens.
+ *
+ * Single source of truth for color, spacing, type, and motion across every
+ * remote (order-mgmt-mfe, inventory-mfe, planning-mfe, fulfillment-mfe,
+ * workforce-mfe, facility-mfe) and the warehouse-console shell. A remote
+ * that hand-rolls its own palette instead of consuming these variables is
+ * a bug, not a style choice -- visual consistency across a micro-frontend
+ * boundary is the #1 place MFE UX fails.
+ *
+ * Status colors deliberately use the SAME vocabulary as each service's own
+ * domain status enum (Order.Status, Task.Status, WorkUnit lifecycle, etc.)
+ * -- see components/StatusPill.tsx. Do not invent UI-only synonyms.
+ */
+
+:root {
+  /* ---- color: neutrals ------------------------------------------- */
+  --wh-color-bg: #0b0f14;
+  --wh-color-bg-raised: #121822;
+  --wh-color-bg-sunken: #060a0e;
+  --wh-color-border: #232b38;
+  --wh-color-border-subtle: #1a212c;
+  --wh-color-text: #e6edf5;
+  --wh-color-text-muted: #8f9bad;
+  --wh-color-text-faint: #5c6779;
+
+  /* ---- color: brand / accent --------------------------------------- */
+  --wh-color-accent: #4d8dff;
+  --wh-color-accent-hover: #6ba0ff;
+  --wh-color-accent-muted: #1c2b47;
+
+  /* ---- color: semantic status --------------------------------------
+     Every domain status across all 6 contexts maps onto ONE of these five
+     lanes. See StatusPill's STATUS_TONE map for the exact mapping table. */
+  --wh-color-status-neutral: #8f9bad;
+  --wh-color-status-neutral-bg: #1b212c;
+  --wh-color-status-progress: #4d8dff;
+  --wh-color-status-progress-bg: #16233d;
+  --wh-color-status-success: #3dd68c;
+  --wh-color-status-success-bg: #123729;
+  --wh-color-status-warning: #f5b942;
+  --wh-color-status-warning-bg: #3a2c10;
+  --wh-color-status-danger: #f4614c;
+  --wh-color-status-danger-bg: #3a1712;
+
+  /* ---- spacing (4px base scale) -------------------------------------- */
+  --wh-space-1: 4px;
+  --wh-space-2: 8px;
+  --wh-space-3: 12px;
+  --wh-space-4: 16px;
+  --wh-space-5: 24px;
+  --wh-space-6: 32px;
+  --wh-space-7: 48px;
+  --wh-space-8: 64px;
+
+  /* ---- radius ---------------------------------------------------- */
+  --wh-radius-sm: 4px;
+  --wh-radius-md: 8px;
+  --wh-radius-lg: 12px;
+  --wh-radius-pill: 999px;
+
+  /* ---- type -------------------------------------------------------- */
+  --wh-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter,
+    Roboto, sans-serif;
+  --wh-font-mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --wh-font-size-xs: 12px;
+  --wh-font-size-sm: 13px;
+  --wh-font-size-md: 14px;
+  --wh-font-size-lg: 16px;
+  --wh-font-size-xl: 20px;
+  --wh-font-size-2xl: 28px;
+  --wh-font-weight-regular: 400;
+  --wh-font-weight-medium: 500;
+  --wh-font-weight-semibold: 600;
+
+  /* ---- elevation ------------------------------------------------- */
+  --wh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --wh-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --wh-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+
+  /* ---- motion -------------------------------------------------------
+     Kept short and consistent: this is an operational console people stare
+     at for a full shift, not a marketing site. Nothing should feel slow. */
+  --wh-motion-fast: 120ms;
+  --wh-motion-base: 180ms;
+  --wh-motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- z-index scale --------------------------------------------------
+     Centralized so a remote's own stacking context can never fight the
+     shell's nav/toast layer. */
+  --wh-z-nav: 100;
+  --wh-z-dropdown: 200;
+  --wh-z-modal: 300;
+  --wh-z-toast: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--wh-color-bg);
+  color: var(--wh-color-text);
+  font-family: var(--wh-font-sans);
+  font-size: var(--wh-font-size-md);
+  -webkit-font-smoothing: antialiased;
+}
