@@ -22,5 +22,20 @@ export type { LaunchTileProps } from "./components/LaunchTile";
 export { AppShell, Breadcrumbs } from "./components/AppShell";
 export type { NavItem } from "./components/AppShell";
 
+/* ---- charts: dependency-free SVG primitives ------------------------- */
+export { BarChart } from "./components/BarChart";
+export type { BarChartProps } from "./components/BarChart";
+
+export { LineChart } from "./components/LineChart";
+export type {
+  LineChartProps,
+  LineChartThreshold,
+} from "./components/LineChart";
+
+export { FunnelChart } from "./components/FunnelChart";
+export type { FunnelChartProps } from "./components/FunnelChart";
+
+export type { ChartDatum, ChartTone } from "./components/chartCommon";
+
 export { useFetch } from "./hooks/useFetch";
 export type { FetchState } from "./hooks/useFetch";
