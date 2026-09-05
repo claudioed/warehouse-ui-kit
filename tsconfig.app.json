@@ -22,5 +22,9 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  /* Tests live beside their components but are NOT part of the published
+     library: vite-plugin-dts generates dist/ declarations from this project,
+     so anything listed here ends up in the package's public type surface. */
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]
 }

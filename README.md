@@ -31,6 +31,7 @@ guarantees.
 npm install
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # oxlint
+npm test            # vitest run (jsdom + React Testing Library)
 npm run build        # tsc -b && vite build -> dist/
 ```
 
@@ -49,4 +50,30 @@ there is no npm registry publish step yet (single-workspace, pre-1.0).
 | `KpiStat` | Control-tower stat panel (big number, label, threshold-colored accent bar) |
 | `LaunchTile` | Fiori-style launchpad tile linking into a bounded context's screen |
 | `AppShell` | Persistent top nav + site-switcher slot |
+| `BarChart` | Dependency-free SVG bar chart (horizontal or vertical) for comparing named categories |
+| `LineChart` | Dependency-free SVG line chart / sparkline for one time series, with an optional target line |
+| `FunnelChart` | Stage funnel with tapering connectors and per-stage leakage — powers the WMS order funnel |
 | `useFetch` | Minimal typed-fetch hook shared by every remote |
+
+### Charts
+
+The chart primitives draw plain SVG and pull **no** charting dependency. This package is a
+Module Federation shared singleton, so a 100 kB chart library here is a cost every remote pays
+on every screen. They are dashboard-card primitives — no zoom, no legend, no crosshair — and
+they render exactly the numbers passed in, fetching nothing themselves.
+
+```tsx
+<FunnelChart
+  title="Order funnel"
+  stages={[
+    { label: "Received", value: 1000 },
+    { label: "Allocated", value: 820 },
+    { label: "Released", value: 700 },
+  ]}
+/>
+```
+
+Every chart takes a `{ label, value }[]`, an optional `formatValue`, and an `emptyState`
+(defaulting to `No data.`) so no screen ships a silent blank box. All colors and spacing come
+from `tokens.css`; because CSS custom properties are invalid inside SVG presentation
+attributes, the charts set `fill`/`stroke` through `style` rather than as attributes.
