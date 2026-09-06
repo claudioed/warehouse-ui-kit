@@ -40,6 +40,9 @@ export type DomainStatus =
   | "OnShift"
   | "OnBreak"
   | "OffShift"
+  // process-path-management: ProcessPath.Status
+  | "ACTIVE"
+  | "DEACTIVATED"
   // generic fallback for anything not yet enumerated above -- renders as
   // neutral rather than throwing, so a new backend status never crashes a
   // screen; but treat every appearance of this fallback as a TODO to add
@@ -61,6 +64,7 @@ const STATUS_TONE: Record<string, Tone> = {
   Available: "success",
   Occupied: "success",
   OnShift: "success",
+  ACTIVE: "success",
   // in progress / neutral-active
   Received: "progress",
   Pending: "neutral",
@@ -79,6 +83,7 @@ const STATUS_TONE: Record<string, Tone> = {
   Unlocated: "danger",
   Decommissioned: "neutral",
   OffShift: "neutral",
+  DEACTIVATED: "neutral",
 };
 
 const TONE_VARS: Record<Tone, { fg: string; bg: string }> = {
