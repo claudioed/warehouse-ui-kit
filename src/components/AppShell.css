@@ -1,0 +1,171 @@
+/**
+ * AppShell / Breadcrumbs.
+ *
+ * Everything here was previously an inline style object, which made
+ * :hover, :focus-visible and media queries structurally unreachable --
+ * the nav had no hover affordance and no visible keyboard focus at all.
+ */
+
+.wh-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Visible only once focused. First tab stop on every page, so a keyboard
+   user can jump the nav instead of tabbing through every item. */
+.wh-shell__skip {
+  position: absolute;
+  left: var(--wh-space-2);
+  top: calc(-1 * var(--wh-space-8));
+  z-index: var(--wh-z-toast);
+  padding: var(--wh-space-2) var(--wh-space-4);
+  background: var(--wh-color-bg-raised);
+  color: var(--wh-color-text);
+  border: 1px solid var(--wh-color-accent);
+  border-radius: var(--wh-radius-md);
+  font-size: var(--wh-font-size-sm);
+  text-decoration: none;
+  transition: top var(--wh-motion-fast) var(--wh-motion-ease);
+}
+
+.wh-shell__skip:focus {
+  top: var(--wh-space-2);
+}
+
+.wh-shell__header {
+  position: sticky;
+  top: 0;
+  z-index: var(--wh-z-nav);
+  display: flex;
+  align-items: center;
+  gap: var(--wh-space-5);
+  padding: 0 var(--wh-space-5);
+  height: 56px;
+  background: var(--wh-color-bg-raised);
+  border-bottom: 1px solid var(--wh-color-border);
+}
+
+.wh-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--wh-space-2);
+  flex: none;
+  font-weight: 700;
+  font-size: var(--wh-font-size-md);
+  letter-spacing: -0.01em;
+  color: var(--wh-color-text);
+}
+
+.wh-shell__brand-mark {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--wh-color-accent);
+}
+
+/* The console ships ~10 destinations into a fixed 56px bar. Scrolling
+   beats squashing: every label stays readable at its intended size. The
+   scrollbar itself is hidden because the bar is only ever a few items
+   wider than the viewport at the narrowest supported width. */
+.wh-shell__nav {
+  display: flex;
+  gap: var(--wh-space-1);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wh-shell__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.wh-shell__nav-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0 var(--wh-space-3);
+  height: 56px;
+  font-size: var(--wh-font-size-sm);
+  font-weight: var(--wh-font-weight-medium);
+  color: var(--wh-color-text-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--wh-motion-fast) var(--wh-motion-ease),
+    border-color var(--wh-motion-fast) var(--wh-motion-ease);
+}
+
+.wh-shell__nav-item:hover {
+  color: var(--wh-color-text);
+  border-bottom-color: var(--wh-color-border);
+}
+
+/* Inset ring: a full outer ring would be clipped by the header's
+   overflow and by the 56px item height. */
+.wh-shell__nav-item:focus-visible {
+  box-shadow: var(--wh-focus-ring-inset);
+  border-radius: var(--wh-radius-sm);
+  color: var(--wh-color-text);
+}
+
+.wh-shell__nav-item--active {
+  color: var(--wh-color-text);
+  font-weight: var(--wh-font-weight-semibold);
+  border-bottom-color: var(--wh-color-accent);
+}
+
+.wh-shell__site-switcher {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.wh-shell__main {
+  flex: 1;
+  padding: var(--wh-space-5);
+}
+
+/* tabindex="-1" makes this programmatically focusable for the skip link,
+   but it must never show a ring when focused that way. */
+.wh-shell__main:focus {
+  outline: none;
+}
+
+/* ---- Breadcrumbs ---------------------------------------------------- */
+
+.wh-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--wh-space-1);
+  font-size: var(--wh-font-size-sm);
+  color: var(--wh-color-text-muted);
+  margin-bottom: var(--wh-space-4);
+}
+
+.wh-breadcrumbs__item {
+  display: flex;
+  align-items: center;
+  gap: var(--wh-space-1);
+}
+
+.wh-breadcrumbs__sep {
+  color: var(--wh-color-text-faint);
+}
+
+.wh-breadcrumbs__link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--wh-radius-sm);
+}
+
+.wh-breadcrumbs__link:hover {
+  color: var(--wh-color-text);
+  text-decoration: underline;
+}
+
+.wh-breadcrumbs__current {
+  color: var(--wh-color-text);
+}

@@ -38,12 +38,20 @@ export function DataTable<T>({
 }: DataTableProps<T>): ReactElement {
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      {/* aria-busy announces the skeleton/data swap, which was otherwise
+          entirely silent to assistive tech. */}
+      <table
+        aria-busy={loading || undefined}
+        style={{ width: "100%", borderCollapse: "collapse" }}
+      >
         <thead>
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
+                // Without scope, a screen reader cannot reliably tie a cell
+                // back to its column in a wide operational table.
+                scope="col"
                 style={{
                   textAlign: col.align ?? "left",
                   width: col.width,
@@ -67,8 +75,15 @@ export function DataTable<T>({
         <tbody>
           {loading
             ? Array.from({ length: loadingRowCount }).map((_, i) => (
-                <tr key={`skeleton-${i}`}>
+                // Purely decorative placeholders: hide them from the
+                // accessibility tree rather than announcing empty cells.
+                <tr key={`skeleton-${i}`} aria-hidden>
                   {columns.map((col) => (
+                    // Deliberately unlabelled: the parent row is
+                    // aria-hidden, so these shimmer placeholders are never
+                    // reached by assistive tech. Labelling them would
+                    // announce five rows of nothing on every load.
+                    // eslint-disable-next-line jsx-a11y/control-has-associated-label
                     <td
                       key={col.key}
                       style={{ padding: "var(--wh-space-2) var(--wh-space-3)" }}

@@ -1,0 +1,221 @@
+/**
+ * Timeline.
+ *
+ * Two things this stylesheet fixes that inline styles made impossible:
+ *
+ * 1. The docstring and README both promised "Horizontal (desktop) /
+ *    vertical (narrow)". The implementation was unconditionally vertical
+ *    because inline styles cannot express a media or container query.
+ *    `orientation="auto"` now delivers what was always documented.
+ * 2. Step state was conveyed by COLOR ALONE, so "done" and "error" were
+ *    indistinguishable to anyone who cannot separate green from red. Each
+ *    state now also carries a glyph.
+ */
+
+.wh-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wh-timeline__step {
+  display: flex;
+  gap: var(--wh-space-4);
+}
+
+.wh-timeline__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.wh-timeline__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  border: 2px solid var(--wh-timeline-color, var(--wh-color-status-neutral));
+  background: var(--wh-timeline-color, var(--wh-color-status-neutral));
+  color: var(--wh-color-bg);
+}
+
+.wh-timeline__connector {
+  width: 2px;
+  flex: 1;
+  min-height: 32px;
+  background: var(--wh-color-border);
+  margin-top: 2px;
+}
+
+.wh-timeline__body {
+  padding-bottom: var(--wh-space-5);
+  flex: 1;
+  min-width: 0;
+}
+
+.wh-timeline__context {
+  font-size: var(--wh-font-size-xs);
+  color: var(--wh-color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: var(--wh-letter-spacing-wide);
+  font-weight: var(--wh-font-weight-semibold);
+}
+
+.wh-timeline__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--wh-space-2);
+  margin-top: 2px;
+}
+
+.wh-timeline__title {
+  font-weight: var(--wh-font-weight-semibold);
+  font-size: var(--wh-font-size-md);
+}
+
+.wh-timeline__timestamp {
+  font-size: var(--wh-font-size-xs);
+  color: var(--wh-color-text-muted);
+  font-family: var(--wh-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.wh-timeline__detail {
+  margin-top: 4px;
+  font-size: var(--wh-font-size-sm);
+  line-height: var(--wh-line-height-snug);
+  color: var(--wh-color-text-muted);
+}
+
+.wh-timeline__warning {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--wh-font-size-xs);
+  color: var(--wh-color-status-warning);
+  background: var(--wh-color-status-warning-bg);
+  border-radius: var(--wh-radius-sm);
+  padding: 4px 8px;
+  width: fit-content;
+}
+
+/* ---- states --------------------------------------------------------- */
+
+/* Not reached yet: a normal, expected, unalarming condition. Hollow. */
+.wh-timeline__step--pending .wh-timeline__dot {
+  background: transparent;
+  color: transparent;
+}
+
+/**
+ * No signal: the owning service did not answer, so we genuinely do not
+ * know whether this stage happened. Previously this rendered IDENTICALLY
+ * to "pending" -- the same gray hollow dot and the same copy -- which
+ * quietly told an operator "not yet" when the truth was "unknown".
+ * A dashed ring reads as an absent measurement rather than an early one.
+ */
+.wh-timeline__step--unavailable .wh-timeline__dot {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--wh-color-status-warning);
+  color: transparent;
+}
+
+.wh-timeline__step--unavailable .wh-timeline__title {
+  color: var(--wh-color-text-muted);
+}
+
+.wh-timeline__unavailable-reason {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--wh-font-size-xs);
+  color: var(--wh-color-status-warning);
+  background: var(--wh-color-status-warning-bg);
+  border-radius: var(--wh-radius-sm);
+  padding: 4px 8px;
+  width: fit-content;
+}
+
+/* ---- horizontal ------------------------------------------------------ */
+
+.wh-timeline--horizontal {
+  flex-direction: row;
+  align-items: flex-start;
+  overflow-x: auto;
+}
+
+.wh-timeline--horizontal .wh-timeline__step {
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 140px;
+  gap: var(--wh-space-2);
+}
+
+.wh-timeline--horizontal .wh-timeline__rail {
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+}
+
+.wh-timeline--horizontal .wh-timeline__connector {
+  width: auto;
+  height: 2px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0;
+  margin-left: var(--wh-space-2);
+}
+
+.wh-timeline--horizontal .wh-timeline__body {
+  padding-bottom: 0;
+  padding-right: var(--wh-space-4);
+}
+
+/* auto: horizontal only when there is genuinely room for it. */
+@media (max-width: 900px) {
+  .wh-timeline--auto {
+    flex-direction: column;
+  }
+
+  .wh-timeline--auto .wh-timeline__step {
+    flex-direction: row;
+    flex: initial;
+    min-width: 0;
+    gap: var(--wh-space-4);
+  }
+
+  .wh-timeline--auto .wh-timeline__rail {
+    flex-direction: column;
+    width: 20px;
+    align-items: center;
+  }
+
+  .wh-timeline--auto .wh-timeline__connector {
+    width: 2px;
+    height: auto;
+    min-height: 32px;
+    margin-top: 2px;
+    margin-left: 0;
+  }
+
+  .wh-timeline--auto .wh-timeline__body {
+    padding-bottom: var(--wh-space-5);
+    padding-right: 0;
+  }
+}

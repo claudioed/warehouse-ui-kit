@@ -1,0 +1,114 @@
+/**
+ * KpiStat.
+ *
+ * The important behaviour here is the "unavailable" state. Previously a
+ * tile whose feed had failed was rendered with tone="neutral" -- the calm
+ * blue accent -- so a DEAD metric looked quieter than a busy one. On a
+ * control-room surface that is backwards: absence of signal must read as
+ * louder than a healthy number, never softer.
+ */
+
+.wh-kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wh-space-1);
+  background: var(--wh-color-bg-raised);
+  border: 1px solid var(--wh-color-border);
+  border-radius: var(--wh-radius-lg);
+  padding: var(--wh-space-4) var(--wh-space-5);
+  padding-left: calc(var(--wh-space-5) + 3px);
+  overflow: hidden;
+  min-width: 160px;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Only linked tiles are interactive, so only they get hover/focus. */
+a.wh-kpi {
+  transition: border-color var(--wh-motion-fast) var(--wh-motion-ease);
+}
+
+a.wh-kpi:hover,
+a.wh-kpi:focus-visible {
+  border-color: var(--wh-color-accent);
+}
+
+.wh-kpi__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--wh-kpi-accent, var(--wh-color-accent));
+}
+
+.wh-kpi__label {
+  font-size: var(--wh-font-size-xs);
+  font-weight: var(--wh-font-weight-semibold);
+  letter-spacing: var(--wh-letter-spacing-eyebrow);
+  text-transform: uppercase;
+  color: var(--wh-color-text-muted);
+}
+
+.wh-kpi__value {
+  font-family: var(--wh-font-mono);
+  /* Without tabular figures the headline number changes width on every
+     poll, so the whole tile twitches while an operator is reading it. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: var(--wh-font-size-2xl);
+  font-weight: var(--wh-font-weight-semibold);
+  line-height: var(--wh-line-height-tight);
+  color: var(--wh-color-text);
+}
+
+.wh-kpi__caption {
+  font-size: var(--wh-font-size-xs);
+  color: var(--wh-color-text-faint);
+}
+
+/* ---- states --------------------------------------------------------- */
+
+/* No signal: dashed edge + warning accent. Deliberately more visually
+   disruptive than any healthy tone. */
+.wh-kpi--unavailable {
+  border-style: dashed;
+  border-color: var(--wh-color-status-warning);
+}
+
+.wh-kpi--unavailable .wh-kpi__value {
+  color: var(--wh-color-status-warning);
+}
+
+.wh-kpi--unavailable .wh-kpi__caption {
+  color: var(--wh-color-status-warning);
+}
+
+/* Endpoint answered, but with nothing to report. That is a real,
+   unalarming state and must not look like a failure. */
+.wh-kpi--no-data .wh-kpi__value {
+  color: var(--wh-color-text-faint);
+}
+
+.wh-kpi__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--wh-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--wh-font-size-xs);
+  font-weight: var(--wh-font-weight-semibold);
+}
+
+.wh-kpi__delta--good {
+  color: var(--wh-color-status-success);
+}
+
+.wh-kpi__delta--bad {
+  color: var(--wh-color-status-danger);
+}
+
+.wh-kpi__delta--flat {
+  color: var(--wh-color-text-faint);
+}

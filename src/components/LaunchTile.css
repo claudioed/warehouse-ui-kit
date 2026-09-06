@@ -1,0 +1,62 @@
+/**
+ * LaunchTile.
+ *
+ * The hover affordance used to be two JS mouse handlers mutating
+ * e.currentTarget.style. That is mouse-only by construction: there was no
+ * onFocus counterpart, so a keyboard user got no indication of which tile
+ * they were on. A real :hover / :focus-visible pair fixes both at once.
+ */
+
+.wh-launch-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wh-space-2);
+  background: var(--wh-color-bg-raised);
+  border: 1px solid var(--wh-color-border);
+  border-radius: var(--wh-radius-lg);
+  padding: var(--wh-space-5);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--wh-motion-base) var(--wh-motion-ease),
+    background var(--wh-motion-base) var(--wh-motion-ease);
+}
+
+.wh-launch-tile:hover,
+.wh-launch-tile:focus-visible {
+  border-color: var(--wh-color-accent);
+}
+
+.wh-launch-tile__context {
+  font-size: var(--wh-font-size-xs);
+  font-weight: var(--wh-font-weight-semibold);
+  letter-spacing: var(--wh-letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--wh-color-text-faint);
+}
+
+.wh-launch-tile__title {
+  font-size: var(--wh-font-size-lg);
+  font-weight: var(--wh-font-weight-semibold);
+  line-height: var(--wh-line-height-tight);
+}
+
+.wh-launch-tile__description {
+  font-size: var(--wh-font-size-sm);
+  line-height: var(--wh-line-height-normal);
+  color: var(--wh-color-text-muted);
+  flex: 1;
+}
+
+.wh-launch-tile__badge {
+  align-self: flex-start;
+  font-family: var(--wh-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--wh-font-size-xs);
+  font-weight: var(--wh-font-weight-semibold);
+  color: var(--wh-color-accent);
+  background: var(--wh-color-accent-muted);
+  border-radius: var(--wh-radius-sm);
+  padding: 2px 8px;
+}

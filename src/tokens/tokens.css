@@ -22,7 +22,12 @@
   --wh-color-border-subtle: #1a212c;
   --wh-color-text: #e6edf5;
   --wh-color-text-muted: #8f9bad;
-  --wh-color-text-faint: #5c6779;
+  /* Raised from #5c6779, which measured 3.36:1 on --wh-color-bg and failed
+     WCAG AA for normal text. This token is NOT decorative -- it carries
+     DataTable column headers, Timeline timestamps and chart axis labels.
+     #78849a measures 5.09:1 on --wh-color-bg and 4.72:1 on -bg-raised,
+     while staying visibly fainter than --wh-color-text-muted. */
+  --wh-color-text-faint: #78849a;
 
   /* ---- color: brand / accent --------------------------------------- */
   --wh-color-accent: #4d8dff;
@@ -73,10 +78,28 @@
   --wh-font-weight-medium: 500;
   --wh-font-weight-semibold: 600;
 
+  /* ---- type: rhythm ---------------------------------------------------
+     Previously every component inherited the browser default (~1.4-1.5),
+     which is loose for a dense operational table, and the uppercase-eyebrow
+     letter-spacing was hardcoded in four separate components. */
+  --wh-line-height-tight: 1.15; /* headline numerals, KPI values */
+  --wh-line-height-snug: 1.3; /* table cells, pills, dense rows */
+  --wh-line-height-normal: 1.5; /* prose, descriptions, help text */
+  --wh-letter-spacing-eyebrow: 0.06em; /* uppercase micro-labels */
+  --wh-letter-spacing-wide: 0.04em;
+
   /* ---- elevation ------------------------------------------------- */
   --wh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
   --wh-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
   --wh-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+
+  /* ---- focus ----------------------------------------------------------
+     A two-stop ring so it stays visible on both --wh-color-bg and
+     --wh-color-bg-raised: an inner "cut-out" in the page color, then the
+     accent. Until this shipped, the entire fleet had NO visible keyboard
+     focus anywhere -- inline styles cannot express :focus-visible. */
+  --wh-focus-ring: 0 0 0 2px var(--wh-color-bg), 0 0 0 4px var(--wh-color-accent);
+  --wh-focus-ring-inset: inset 0 0 0 2px var(--wh-color-accent);
 
   /* ---- motion -------------------------------------------------------
      Kept short and consistent: this is an operational console people stare
@@ -94,8 +117,35 @@
   --wh-z-toast: 400;
 }
 
-* {
+/* ---- surface calibrations ---------------------------------------------
+   The console runs two modes off ONE token set rather than forking any
+   component: a glanceable monitor wall and a dense investigate workspace.
+   Set data-surface on any subtree; everything inside rescales.
+
+   Only sizing is recalibrated -- never color, never status meaning. */
+[data-surface="monitor"] {
+  --wh-font-size-xs: 13px;
+  --wh-font-size-sm: 15px;
+  --wh-font-size-md: 16px;
+  --wh-font-size-lg: 20px;
+  --wh-font-size-xl: 28px;
+  --wh-font-size-2xl: 44px;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  /* Tells the UA to render native controls, scrollbars and autofill dark.
+     Without it they render light against a near-black page. Also set on
+     <html> so the background is painted before the JS module graph (and
+     therefore this stylesheet) arrives -- otherwise every load flashes
+     white. */
+  color-scheme: dark;
+  background: var(--wh-color-bg);
 }
 
 body {
@@ -104,5 +154,59 @@ body {
   color: var(--wh-color-text);
   font-family: var(--wh-font-sans);
   font-size: var(--wh-font-size-md);
+  line-height: var(--wh-line-height-normal);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus, once, for the shell and all six remotes. Scoped to
+   :focus-visible so pointer users never see a ring. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--wh-focus-ring);
+  border-radius: var(--wh-radius-sm);
+}
+
+/* Operational data must not reflow while it polls. Proportional digits
+   change width between renders, so every metric visibly twitches on each
+   refresh; tabular figures pin each digit to the same advance width. */
+.wh-numeric {
+  font-family: var(--wh-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.wh-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared by DataTable's loading rows and any Skeleton. Previously
+   DataTable injected this keyframe block as a <style> element per table
+   instance. */
+@keyframes wh-shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
