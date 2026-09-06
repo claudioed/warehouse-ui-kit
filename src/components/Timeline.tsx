@@ -1,6 +1,28 @@
 import type { ReactElement, ReactNode } from "react";
 
-export type TimelineStepState = "done" | "active" | "pending" | "warning" | "error";
+/**
+ * `unavailable` is deliberately NOT the same as `pending`.
+ *
+ * - pending      -- the order genuinely has not reached this stage. Normal.
+ * - unavailable  -- the owning service did not answer, so whether it
+ *                   reached this stage is UNKNOWN. Actionable.
+ *
+ * These were previously collapsed into a single `pending` step with the
+ * copy "Not reached yet, or this service didn't respond", which told an
+ * operator a reassuring story about a broken observability path. The
+ * ui-kit's own FreshnessBadge already states the principle this restores:
+ * surfacing staleness honestly beats a dashboard that looks real-time but
+ * is quietly wrong.
+ */
+export type TimelineStepState =
+  | "done"
+  | "active"
+  | "pending"
+  | "unavailable"
+  | "warning"
+  | "error";
+
+export type TimelineOrientation = "auto" | "horizontal" | "vertical";
 
 export interface TimelineStep {
   id: string;
@@ -16,144 +38,117 @@ export interface TimelineStep {
   detail?: ReactNode;
   /** Inline warnings for this stage (e.g. "Line 2 backordered", "Lease
    *  expired once"). Rendered as small warning rows, never a separate
-   *  alerts panel -- see the Order Lifecycle screen design rationale. */
+   *  alerts panel. */
   warnings?: string[];
+  /** Why this stage is unknown. Only meaningful with state="unavailable";
+   *  e.g. "inventory-storage did not respond". */
+  unavailableReason?: string;
 }
 
-const STATE_COLOR: Record<TimelineStepState, string> = {
-  done: "var(--wh-color-status-success)",
-  active: "var(--wh-color-status-progress)",
-  pending: "var(--wh-color-status-neutral)",
-  warning: "var(--wh-color-status-warning)",
-  error: "var(--wh-color-status-danger)",
+/** Color alone cannot distinguish done from error for a large minority of
+ *  operators, so every state also carries a mark. */
+const STATE_GLYPH: Record<TimelineStepState, string> = {
+  done: "✓",
+  active: "•",
+  pending: "",
+  unavailable: "",
+  warning: "!",
+  error: "✕",
 };
 
+const STATE_LABEL: Record<TimelineStepState, string> = {
+  done: "completed",
+  active: "in progress",
+  pending: "not reached yet",
+  unavailable: "no signal",
+  warning: "completed with warnings",
+  error: "failed",
+};
+
+function colorFor(state: TimelineStepState): string {
+  switch (state) {
+    case "done":
+      return "var(--wh-color-status-success)";
+    case "active":
+      return "var(--wh-color-status-progress)";
+    case "warning":
+    case "unavailable":
+      return "var(--wh-color-status-warning)";
+    case "error":
+      return "var(--wh-color-status-danger)";
+    default:
+      return "var(--wh-color-status-neutral)";
+  }
+}
+
 /**
- * Horizontal (desktop) / vertical (narrow) lifecycle stepper. Built for
- * exactly one job: the Order Lifecycle screen's "Received -> Allocated ->
- * Released -> WorkUnit -> Task(s) -> Sealed" cross-service narrative, but
- * generic enough for any other multi-stage domain flow the console needs
- * later.
+ * Horizontal (desktop) / vertical (narrow) lifecycle stepper, built for
+ * the Order Lifecycle screen's cross-service narrative but generic enough
+ * for any multi-stage domain flow.
  *
- * Partial-failure tolerant by construction: a step with state="pending"
- * and no detail simply renders as "not reached yet / data unavailable" --
- * callers should render whatever stages DID come back rather than
- * blocking the whole timeline on one slow/down upstream service.
+ * Partial-failure tolerant by construction: render whatever stages DID
+ * come back, marking the rest `pending` (not yet) or `unavailable` (not
+ * known) -- never blocking the whole timeline on one slow upstream.
  */
-export function Timeline({ steps }: { steps: TimelineStep[] }): ReactElement {
+export function Timeline({
+  steps,
+  orientation = "vertical",
+}: {
+  steps: TimelineStep[];
+  orientation?: TimelineOrientation;
+}): ReactElement {
+  const orientationClass =
+    orientation === "horizontal"
+      ? "wh-timeline--horizontal"
+      : orientation === "auto"
+        ? "wh-timeline--horizontal wh-timeline--auto"
+        : "";
+
   return (
-    <ol
-      style={{
-        listStyle: "none",
-        margin: 0,
-        padding: 0,
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-      }}
-    >
+    <ol className={`wh-timeline ${orientationClass}`.trim()}>
       {steps.map((step, i) => {
-        const color = STATE_COLOR[step.state];
         const isLast = i === steps.length - 1;
         return (
-          <li key={step.id} style={{ display: "flex", gap: "var(--wh-space-4)" }}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                width: 20,
-                flexShrink: 0,
-              }}
-            >
+          <li
+            key={step.id}
+            data-state={step.state}
+            className={`wh-timeline__step wh-timeline__step--${step.state}`}
+          >
+            <div className="wh-timeline__rail">
               <span
                 aria-hidden
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: "50%",
-                  background: step.state === "pending" ? "transparent" : color,
-                  border: `2px solid ${color}`,
-                  marginTop: 4,
-                  flexShrink: 0,
-                }}
-              />
-              {!isLast && (
-                <span
-                  aria-hidden
-                  style={{
-                    width: 2,
-                    flex: 1,
-                    minHeight: 32,
-                    background: "var(--wh-color-border)",
-                    marginTop: 2,
-                  }}
-                />
-              )}
+                className="wh-timeline__dot"
+                style={{ ["--wh-timeline-color" as string]: colorFor(step.state) }}
+              >
+                {STATE_GLYPH[step.state]}
+              </span>
+              {!isLast && <span aria-hidden className="wh-timeline__connector" />}
             </div>
-            <div style={{ paddingBottom: "var(--wh-space-5)", flex: 1 }}>
-              <div
-                style={{
-                  fontSize: "var(--wh-font-size-xs)",
-                  color: "var(--wh-color-text-faint)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                  fontWeight: 600,
-                }}
-              >
-                {step.context}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: "var(--wh-space-2)",
-                  marginTop: 2,
-                }}
-              >
-                <span style={{ fontWeight: 600, fontSize: "var(--wh-font-size-md)" }}>
-                  {step.title}
+            <div className="wh-timeline__body">
+              <div className="wh-timeline__context">{step.context}</div>
+              <div className="wh-timeline__head">
+                <span className="wh-timeline__title">{step.title}</span>
+                {/* State is otherwise conveyed only by dot color/shape. */}
+                <span className="wh-visually-hidden">
+                  {STATE_LABEL[step.state]}
                 </span>
                 {step.timestamp && (
-                  <span
-                    style={{
-                      fontSize: "var(--wh-font-size-xs)",
-                      color: "var(--wh-color-text-muted)",
-                      fontFamily: "var(--wh-font-mono)",
-                    }}
-                  >
-                    {step.timestamp}
-                  </span>
+                  <span className="wh-timeline__timestamp">{step.timestamp}</span>
                 )}
               </div>
               {step.detail && (
-                <div
-                  style={{
-                    marginTop: 4,
-                    fontSize: "var(--wh-font-size-sm)",
-                    color: "var(--wh-color-text-muted)",
-                  }}
-                >
-                  {step.detail}
+                <div className="wh-timeline__detail">{step.detail}</div>
+              )}
+              {step.state === "unavailable" && step.unavailableReason && (
+                <div className="wh-timeline__unavailable-reason">
+                  <span aria-hidden>⚠</span>
+                  {step.unavailableReason}
                 </div>
               )}
               {step.warnings?.map((w, wi) => (
-                <div
-                  key={wi}
-                  style={{
-                    marginTop: 6,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: "var(--wh-font-size-xs)",
-                    color: "var(--wh-color-status-warning)",
-                    background: "var(--wh-color-status-warning-bg)",
-                    borderRadius: "var(--wh-radius-sm)",
-                    padding: "4px 8px",
-                    width: "fit-content",
-                  }}
-                >
-                  ⚠ {w}
+                <div key={`${step.id}-w${wi}`} className="wh-timeline__warning">
+                  <span aria-hidden>⚠</span>
+                  {w}
                 </div>
               ))}
             </div>
