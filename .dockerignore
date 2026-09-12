@@ -1,0 +1,33 @@
+# This package is consumed by nine sibling frontend images (the warehouse-console
+# shell and the eight bounded-context Module Federation remotes), each of which
+# supplies this checkout to Docker as a named build context:
+#
+#   docker build --build-context uikit=../../warehouse-ui-kit .
+#
+# Without this file, the developer's local node_modules is copied into those
+# Linux builders. That tree only ever contains the host platform's binaries for
+# the native dependencies Vite 8 pulls in (@rolldown/binding-darwin-arm64,
+# lightningcss-darwin-*, @oxlint/binding-darwin-*), so npm inside the image
+# treats those packages as already installed, never fetches the linux ones, and
+# the build dies with:
+#
+#   Error: Cannot find native binding ... Cannot find module
+#   '@rolldown/binding-linux-arm64-gnu'
+#
+# (npm/cli#4828). Excluding node_modules forces every image to resolve its own
+# platform's binaries, and incidentally drops ~176MB from the build context.
+node_modules
+dist
+
+# Local build/test noise that never affects the published bundle.
+.vite
+coverage
+*.log
+npm-debug.log*
+.DS_Store
+
+.git
+.gitignore
+.github
+docs
+README.md
